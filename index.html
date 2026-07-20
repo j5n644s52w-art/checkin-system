@@ -74,18 +74,18 @@
                 resultBox.className = 'success';
                 resultBox.innerText = `✅ 報到完成！\n來賓：${data.guest_name}`;
                 
-                // --- 語音加強版 ---
-                if ('speechSynthesis' in window) {
-                    const msg = new SpeechSynthesisUtterance(`報到成功，歡迎 ${data.guest_name}`);
-                    msg.lang = 'zh-TW';
-                    msg.rate = 1.1; // 稍微調整語速
-                    msg.volume = 1; // 確保音量最大
-                    window.speechSynthesis.speak(msg);
-                } else {
-                    console.log("您的瀏覽器不支援語音功能");
-                }
-                // -------------------
+                // --- 語音強效觸發版 ---
+                // 1. 建立語音物件
+                const msg = new SpeechSynthesisUtterance(`報到成功，歡迎 ${data.guest_name}`);
+                msg.lang = 'zh-TW';
                 
+                // 2. 在 iOS 上，有些時候需要先呼叫一次 cancel 清除隊列
+                window.speechSynthesis.cancel();
+                
+                // 3. 延遲 100 毫秒播放，這能繞過 iOS 的某些瞬間阻擋
+                setTimeout(() => {
+                    window.speechSynthesis.speak(msg);
+                }, 100);
             } else {
                 resultBox.className = 'error';
                 resultBox.innerText = `❌ ${data.message}`;
