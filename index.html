@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>活動報到掃描台</title>
-    <!-- 載入 QR Code 掃描套件 -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body {
@@ -22,6 +21,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             overflow: hidden;
+            display: none; /* 一開始先隱藏相機畫面 */
         }
         #result-box {
             margin-top: 20px;
@@ -37,14 +37,16 @@
         
         button {
             margin-top: 20px;
-            padding: 12px 24px;
-            font-size: 1.1em;
+            padding: 15px 30px;
+            font-size: 1.2em;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            display: none;
             font-weight: bold;
+            display: none;
         }
+        /* 自訂按鈕樣式 */
+        #start-camera-btn { background-color: #343a40; color: white; display: inline-block; }
         #confirm-btn { background-color: #28a745; color: white; }
         #next-btn { background-color: #007bff; color: white; }
     </style>
@@ -53,6 +55,9 @@
 
     <h2>工作人員報到掃描台</h2>
     
+    <!-- 我們自己做的強制啟動按鈕 -->
+    <button id="start-camera-btn" onclick="startCamera()">📷 點我開啟相機</button>
+    
     <div id="reader"></div>
     <div id="result-box"></div>
     
@@ -60,12 +65,34 @@
     <button id="next-btn" onclick="resetScanner()">掃描下一位</button>
 
     <script>
-        let html5QrcodeScanner;
+        let html5QrCode;
         let currentScannedId = ""; 
+
+        // 步驟零：點擊自訂按鈕後，強制啟動後置鏡頭
+        function startCamera() {
+            const startBtn = document.getElementById('start-camera-btn');
+            const readerDiv = document.getElementById('reader');
+            
+            startBtn.style.display = 'none'; // 隱藏按鈕
+            readerDiv.style.display = 'block'; // 顯示相機區塊
+
+            // 使用底層 API 直接呼叫相機
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" }, // 強制使用後置鏡頭
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                alert("無法開啟相機，請確認您已允許瀏覽器使用相機權限！");
+                startBtn.style.display = 'inline-block';
+                readerDiv.style.display = 'none';
+            });
+        }
 
         // 步驟一：掃描成功後，暫停畫面並顯示確認按鈕
         function onScanSuccess(decodedText, decodedResult) {
-            html5QrcodeScanner.pause(); 
+            html5QrCode.pause(); 
             currentScannedId = decodedText; 
 
             const resultBox = document.getElementById('result-box');
@@ -89,7 +116,7 @@
             resultBox.innerText = `資料傳送中...請稍候`;
             confirmBtn.style.display = 'none'; 
 
-            // 👇👇👇 請將下方的網址替換成您部署好的 Apps Script API 網址 👇👇👇
+            // 👇👇👇 這裡請務必替換成您的 Apps Script API 網址 👇👇👇
             fetch('https://script.google.com/macros/s/AKfycbz_R8gs_xZG_Knc7vzWaSO2ceO7UNnLRkLDP_TTisQ/dev', {
                 method: 'POST',
                 body: JSON.stringify({ guest_id: currentScannedId })
@@ -116,19 +143,11 @@
             // 略過錯誤，讓相機繼續抓取
         }
 
-        // 初始化掃描器
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: {width: 250, height: 250}, supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] },
-            false
-        );
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-
         // 步驟三：點擊「掃描下一位」後重置畫面並恢復掃描
         function resetScanner() {
             document.getElementById('result-box').style.display = 'none';
             document.getElementById('next-btn').style.display = 'none';
-            html5QrcodeScanner.resume(); 
+            html5QrCode.resume(); 
         }
     </script>
 </body>
