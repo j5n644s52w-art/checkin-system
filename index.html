@@ -67,17 +67,23 @@
         }
 
         function handleResponse(data) {
-const resultBox = document.getElementById('result-box');
+            const resultBox = document.getElementById('result-box');
             const nextBtn = document.getElementById('next-btn');
             
             if(data.status === 'success') {
                 resultBox.className = 'success';
                 resultBox.innerText = `✅ 報到完成！\n來賓：${data.guest_name}`;
                 
-                // --- 新增語音功能 ---
-                const msg = new SpeechSynthesisUtterance(`報到成功，歡迎 ${data.guest_name}`);
-                msg.lang = 'zh-TW'; // 設定為繁體中文
-                window.speechSynthesis.speak(msg);
+                // --- 語音加強版 ---
+                if ('speechSynthesis' in window) {
+                    const msg = new SpeechSynthesisUtterance(`報到成功，歡迎 ${data.guest_name}`);
+                    msg.lang = 'zh-TW';
+                    msg.rate = 1.1; // 稍微調整語速
+                    msg.volume = 1; // 確保音量最大
+                    window.speechSynthesis.speak(msg);
+                } else {
+                    console.log("您的瀏覽器不支援語音功能");
+                }
                 // -------------------
                 
             } else {
