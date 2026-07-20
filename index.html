@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -6,56 +7,21 @@
     <title>活動報到掃描台</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background-color: #f4f4f9;
-        }
-        h2 { color: #333; }
-        #reader {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: none; /* 一開始先隱藏相機畫面 */
-        }
-        #result-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 1.2em;
-            font-weight: bold;
-            display: none;
-        }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        
-        button {
-            margin-top: 20px;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-        }
-        /* 自訂按鈕樣式 */
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+        #reader { width: 100%; max-width: 500px; margin: 0 auto; background-color: white; border-radius: 8px; display: none; }
+        #result-box { margin-top: 20px; padding: 15px; border-radius: 8px; font-size: 1.2em; font-weight: bold; display: none; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .pending { background-color: #fff3cd; color: #856404; }
+        button { margin-top: 20px; padding: 15px 30px; font-size: 1.2em; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         #start-camera-btn { background-color: #343a40; color: white; display: inline-block; }
-        #confirm-btn { background-color: #28a745; color: white; }
-        #next-btn { background-color: #007bff; color: white; }
+        #confirm-btn { background-color: #28a745; color: white; display: none; }
+        #next-btn { background-color: #007bff; color: white; display: none; }
     </style>
 </head>
 <body>
 
     <h2>工作人員報到掃描台</h2>
-    
-    <!-- 我們自己做的強制啟動按鈕 -->
     <button id="start-camera-btn" onclick="startCamera()">📷 點我開啟相機</button>
     
     <div id="reader"></div>
@@ -68,91 +34,51 @@
         let html5QrCode;
         let currentScannedId = ""; 
 
-        // 步驟零：點擊自訂按鈕後，強制啟動後置鏡頭
         function startCamera() {
-            const startBtn = document.getElementById('start-camera-btn');
-            const readerDiv = document.getElementById('reader');
-            
-            startBtn.style.display = 'none'; // 隱藏按鈕
-            readerDiv.style.display = 'block'; // 顯示相機區塊
-
-            // 使用底層 API 直接呼叫相機
+            document.getElementById('start-camera-btn').style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
-                { facingMode: "environment" }, // 強制使用後置鏡頭
+                { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                onScanFailure
-            ).catch(err => {
-                alert("無法開啟相機，請確認您已允許瀏覽器使用相機權限！");
-                startBtn.style.display = 'inline-block';
-                readerDiv.style.display = 'none';
-            });
+                (decodedText) => {
+                    html5QrCode.pause(); 
+                    currentScannedId = decodedText; 
+                    const resultBox = document.getElementById('result-box');
+                    resultBox.style.display = 'block';
+                    resultBox.className = 'pending';
+                    resultBox.innerText = `讀取成功！\n代碼：${decodedText}\n請點擊「確認報到」`;
+                    document.getElementById('confirm-btn').style.display = 'inline-block'; 
+                }
+            ).catch(err => alert("相機啟動失敗，請確認權限"));
         }
 
-        // 步驟一：掃描成功後，暫停畫面並顯示確認按鈕
-        function onScanSuccess(decodedText, decodedResult) {
-            html5QrCode.pause(); 
-            currentScannedId = decodedText; 
-
+        function sendToCheckIn() {
             const resultBox = document.getElementById('result-box');
-            const confirmBtn = document.getElementById('confirm-btn');
-            const nextBtn = document.getElementById('next-btn');
+            resultBox.innerText = `資料傳送中...請稍候`;
+            document.getElementById('confirm-btn').style.display = 'none'; 
 
-            resultBox.style.display = 'block';
-            resultBox.className = 'pending';
-            resultBox.innerText = `讀取成功！\n代碼：${decodedText}\n請核對後點擊下方「確認報到」`;
+            // 👇👇👇 這裡務必換成您真正的 Google Apps Script 網址 👇👇👇
+            const url = 'https://script.google.com/macros/s/AKfycbyCNjZmcLuA7EdfDdHwAFmVmRzshAXQZsxkLLLDZo7lFsXR-qeSIr63CQ81ZaOyqXUf/exec'; 
             
-            confirmBtn.style.display = 'inline-block'; 
-            nextBtn.style.display = 'none'; 
-        }
-
-        // 步驟二：點擊確認報到後，將資料傳送到 GAS 後端
-        function sendToCheckIn() {
-            const resultBox = document.getElementById('result-box');
-            const confirmBtn = document.getElementById('confirm-btn');
-            const nextBtn = document.getElementById('next-btn');
-
-            resultBox.innerText = `資料傳送中...請稍候`;
-            confirmBtn.style.display = 'none'; 
-
-// 點擊確認報到後，用 JSONP 方式傳送資料
-        function sendToCheckIn() {
-            const resultBox = document.getElementById('result-box');
-            const confirmBtn = document.getElementById('confirm-btn');
-            const nextBtn = document.getElementById('next-btn');
-
-            resultBox.innerText = `資料傳送中...請稍候`;
-            confirmBtn.style.display = 'none'; 
-
-            // 將資料轉為查詢參數
-            const url = 'https://script.google.com/macros/s/AKfycbyCNjZmcLuA7EdfDdHwAFmVmRzshAXQZsxkLLLDZo7lFsXR-qeSIr63CQ81ZaOyqXUf/exec'; // 請務必填入您的真實 GAS 網址
             const script = document.createElement('script');
             script.src = `${url}?callback=handleResponse&guest_id=${encodeURIComponent(currentScannedId)}`;
             document.body.appendChild(script);
         }
 
-        // 這是 Google 回傳後的處理函式
         function handleResponse(data) {
             const resultBox = document.getElementById('result-box');
             const nextBtn = document.getElementById('next-btn');
-            
             if(data.status === 'success') {
                 resultBox.className = 'success';
                 resultBox.innerText = `✅ 報到完成！\n來賓：${data.guest_name}`;
             } else {
                 resultBox.className = 'error';
-                resultBox.innerText = `❌ ${data.message}\n${data.guest_name ? '來賓：' + data.guest_name : ''}`;
+                resultBox.innerText = `❌ ${data.message}`;
             }
             nextBtn.style.display = 'inline-block';
         }
-        }
 
-        function onScanFailure(error) {
-            // 略過錯誤，讓相機繼續抓取
-        }
-
-        // 步驟三：點擊「掃描下一位」後重置畫面並恢復掃描
         function resetScanner() {
             document.getElementById('result-box').style.display = 'none';
             document.getElementById('next-btn').style.display = 'none';
