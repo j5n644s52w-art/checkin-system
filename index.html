@@ -2,10 +2,9 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 設定 viewport 確保在手機上能正確顯示比例 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>活動報到掃描台</title>
-    <!-- 載入 html5-qrcode 套件 -->
+    <!-- 載入 QR Code 掃描套件 -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body {
@@ -15,7 +14,6 @@
             background-color: #f4f4f9;
         }
         h2 { color: #333; }
-        /* 掃描器外框設定 */
         #reader {
             width: 100%;
             max-width: 500px;
@@ -25,106 +23,112 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        /* 掃描結果顯示區 */
         #result-box {
             margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
             font-size: 1.2em;
             font-weight: bold;
-            display: none; /* 預設隱藏，掃描成功才顯示 */
+            display: none;
         }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         
         button {
             margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 12px 24px;
+            font-size: 1.1em;
             border: none;
             border-radius: 5px;
-            background-color: #007bff;
-            color: white;
             cursor: pointer;
             display: none;
+            font-weight: bold;
         }
+        #confirm-btn { background-color: #28a745; color: white; }
+        #next-btn { background-color: #007bff; color: white; }
     </style>
 </head>
 <body>
 
     <h2>工作人員報到掃描台</h2>
     
-    <!-- 攝影機掃描畫面會渲染在這個 div 裡 -->
     <div id="reader"></div>
-    
-    <!-- 顯示掃描結果 -->
     <div id="result-box"></div>
     
-    <!-- 繼續掃描下一位的按鈕 -->
+    <button id="confirm-btn" onclick="sendToCheckIn()">確認報到</button>
     <button id="next-btn" onclick="resetScanner()">掃描下一位</button>
 
     <script>
         let html5QrcodeScanner;
+        let currentScannedId = ""; 
 
-        // 當掃描成功時會觸發這個函式
+        // 步驟一：掃描成功後，暫停畫面並顯示確認按鈕
         function onScanSuccess(decodedText, decodedResult) {
-            // 1. 暫停掃描，避免同一個 QR code 瞬間重複送出
-            html5QrcodeScanner.pause();
+            html5QrcodeScanner.pause(); 
+            currentScannedId = decodedText; 
 
             const resultBox = document.getElementById('result-box');
+            const confirmBtn = document.getElementById('confirm-btn');
             const nextBtn = document.getElementById('next-btn');
 
-            // 2. 顯示掃描結果
             resultBox.style.display = 'block';
-            resultBox.className = 'success';
-            resultBox.innerText = `掃描成功！\n來賓代碼：${decodedText}\n資料傳送中...`;
-            nextBtn.style.display = 'inline-block';
-
-            // 3. 將資料傳送到後端資料庫 (此處為模擬示範)
-            /* 
-            實際應用時，您會使用 fetch API 將 decodedText 傳給您的後端（如 Python 伺服器或 Google Apps Script）
+            resultBox.className = 'pending';
+            resultBox.innerText = `讀取成功！\n代碼：${decodedText}\n請核對後點擊下方「確認報到」`;
             
-            fetch('https://script.google.com/macros/s/AKfycbyH3freBqsLFotR3ERhVjL3pJtnQuo0RMHo-Ja_d3e0s-CPinkyUFd7ylPeI7duyTK5/exec', {
+            confirmBtn.style.display = 'inline-block'; 
+            nextBtn.style.display = 'none'; 
+        }
+
+        // 步驟二：點擊確認報到後，將資料傳送到 GAS 後端
+        function sendToCheckIn() {
+            const resultBox = document.getElementById('result-box');
+            const confirmBtn = document.getElementById('confirm-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            resultBox.innerText = `資料傳送中...請稍候`;
+            confirmBtn.style.display = 'none'; 
+
+            // 👇👇👇 請將下方的網址替換成您部署好的 Apps Script API 網址 👇👇👇
+            fetch('https://script.google.com/macros/s/AKfycbz_R8gs_xZG_Knc7vzWaSO2ceO7UNnLRkLDP_TTisQ/dev', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ guest_id: decodedText, timestamp: new Date().toISOString() })
+                body: JSON.stringify({ guest_id: currentScannedId })
             })
             .then(response => response.json())
             .then(data => {
                 if(data.status === 'success') {
-                    resultBox.innerText = `報到完成！\n來賓：${data.guest_name}`;
+                    resultBox.className = 'success';
+                    resultBox.innerText = `✅ 報到完成！\n來賓：${data.guest_name}`;
                 } else {
                     resultBox.className = 'error';
-                    resultBox.innerText = `報到失敗：${data.message}`;
+                    resultBox.innerText = `❌ ${data.message}\n${data.guest_name ? '來賓：' + data.guest_name : ''}`;
                 }
+                nextBtn.style.display = 'inline-block'; 
+            })
+            .catch(error => {
+                resultBox.className = 'error';
+                resultBox.innerText = `連線錯誤，請檢查網路`;
+                nextBtn.style.display = 'inline-block';
             });
-            */
         }
 
-        // 當畫面中沒有找到 QR code，或解析失敗時觸發 (通常略過即可，讓相機繼續抓取)
         function onScanFailure(error) {
-            // console.warn(`Code scan error = ${error}`);
+            // 略過錯誤，讓相機繼續抓取
         }
 
-        // 初始化掃描器設定
+        // 初始化掃描器
         html5QrcodeScanner = new Html5QrcodeScanner(
             "reader",
-            { 
-                fps: 10, // 每秒掃描次數
-                qrbox: {width: 250, height: 250}, // 掃描框大小
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-            },
-            false // 不顯示詳細的 log
+            { fps: 10, qrbox: {width: 250, height: 250}, supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] },
+            false
         );
-        
-        // 啟動掃描器
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
-        // 點擊「掃描下一位」重新啟動
+        // 步驟三：點擊「掃描下一位」後重置畫面並恢復掃描
         function resetScanner() {
             document.getElementById('result-box').style.display = 'none';
             document.getElementById('next-btn').style.display = 'none';
-            html5QrcodeScanner.resume();
+            html5QrcodeScanner.resume(); 
         }
     </script>
 </body>
