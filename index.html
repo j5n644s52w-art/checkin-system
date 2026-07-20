@@ -117,8 +117,13 @@
             confirmBtn.style.display = 'none'; 
 
             // 👇👇👇 這裡請務必替換成您的 Apps Script API 網址 👇👇👇
-            fetch('https://script.google.com/macros/s/AKfycbyCNjZmcLuA7EdfDdHwAFmVmRzshAXQZsxkLLLDZo7lFsXR-qeSIr63CQ81ZaOyqXUf/exec', {
+  // 👇👇👇 請再次確認這裡有換成您真正的 API 網址 👇👇👇
+            fetch('https://script.google.com/macros/s/您的專屬ID/exec', {
                 method: 'POST',
+                redirect: 'follow', // 強制跟隨 Google 的轉址 (解決大部分連線問題)
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8" // 偽裝成純文字，避免瀏覽器安全阻擋
+                },
                 body: JSON.stringify({ guest_id: currentScannedId })
             })
             .then(response => response.json())
@@ -133,8 +138,9 @@
                 nextBtn.style.display = 'inline-block'; 
             })
             .catch(error => {
+                // 將系統真實的錯誤原因印在畫面上
                 resultBox.className = 'error';
-                resultBox.innerText = `連線錯誤，請檢查網路`;
+                resultBox.innerText = `系統錯誤：${error.message}\n(請將此畫面截圖給我看)`;
                 nextBtn.style.display = 'inline-block';
             });
         }
