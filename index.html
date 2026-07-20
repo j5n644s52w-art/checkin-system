@@ -59,7 +59,7 @@
             document.getElementById('confirm-btn').style.display = 'none'; 
 
             // 👇👇👇 這裡務必換成您真正的 Google Apps Script 網址 👇👇👇
-            const url = 'https://script.google.com/macros/s/AKfycbyCNjZmcLuA7EdfDdHwAFmVmRzshAXQZsxkLLLDZo7lFsXR-qeSIr63CQ81ZaOyqXUf/exec'; 
+            const url = 'https://script.google.com/macros/s/AKfycbyamn06IZbBiDqd44zs-vzlAlIB_TdNLzNPY1voyoPKrMGqUuhrSk0B4PQKRUJl66rv/exec'; 
             
             const script = document.createElement('script');
             script.src = `${url}?callback=handleResponse&guest_id=${encodeURIComponent(currentScannedId)}`;
