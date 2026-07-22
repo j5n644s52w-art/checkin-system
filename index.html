@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -15,24 +14,21 @@
         .pending { background-color: #fff3cd; color: #856404; }
         button { margin-top: 20px; padding: 15px 30px; font-size: 1.2em; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         #start-camera-btn { background-color: #343a40; color: white; display: inline-block; }
-        #confirm-btn { background-color: #28a745; color: white; display: none; }
         #next-btn { background-color: #007bff; color: white; display: none; }
     </style>
 </head>
 <body>
 
-    <h2>報到掃描台</h2>
+    <h2>工作人員報到掃描台</h2>
     <button id="start-camera-btn" onclick="startCamera()">📷 點我開啟相機</button>
     
     <div id="reader"></div>
     <div id="result-box"></div>
     
-    <button id="confirm-btn" onclick="sendToCheckIn()">確認報到</button>
     <button id="next-btn" onclick="resetScanner()">掃描下一位</button>
 
     <script>
         let html5QrCode;
-        let currentScannedId = ""; 
 
         function startCamera() {
             document.getElementById('start-camera-btn').style.display = 'none';
@@ -42,27 +38,24 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
+                    // 一旦掃到 QR Code，立刻暫停相機並直接發送資料
                     html5QrCode.pause(); 
-                    currentScannedId = decodedText; 
-                    const resultBox = document.getElementById('result-box');
-                    resultBox.style.display = 'block';
-                    resultBox.className = 'pending';
-                    resultBox.innerText = `讀取成功！\n代碼：${decodedText}\n請點擊「確認報到」`;
-                    document.getElementById('confirm-btn').style.display = 'inline-block'; 
+                    sendToCheckIn(decodedText);
                 }
             ).catch(err => alert("相機啟動失敗，請確認權限"));
         }
 
-        function sendToCheckIn() {
+        function sendToCheckIn(qrId) {
             const resultBox = document.getElementById('result-box');
+            resultBox.style.display = 'block';
+            resultBox.className = 'pending';
             resultBox.innerText = `資料傳送中...請稍候`;
-            document.getElementById('confirm-btn').style.display = 'none'; 
 
-            // 👇👇👇 這裡務必換成您真正的 Google Apps Script 網址 👇👇👇
+            // 👇👇👇 請務必確認這裡的 GAS 網址是正確的 👇👇👇
             const url = 'https://script.google.com/macros/s/AKfycbyamn06IZbBiDqd44zs-vzlAlIB_TdNLzNPY1voyoPKrMGqUuhrSk0B4PQKRUJl66rv/exec'; 
             
             const script = document.createElement('script');
-            script.src = `${url}?callback=handleResponse&guest_id=${encodeURIComponent(currentScannedId)}`;
+            script.src = `${url}?callback=handleResponse&guest_id=${encodeURIComponent(qrId)}`;
             document.body.appendChild(script);
         }
 
@@ -73,19 +66,6 @@
             if(data.status === 'success') {
                 resultBox.className = 'success';
                 resultBox.innerText = `✅ 報到完成！\n來賓：${data.guest_name}`;
-                
-                // --- 語音強效觸發版 ---
-                // 1. 建立語音物件
-                const msg = new SpeechSynthesisUtterance(`報到成功，歡迎 ${data.guest_name}`);
-                msg.lang = 'zh-TW';
-                
-                // 2. 在 iOS 上，有些時候需要先呼叫一次 cancel 清除隊列
-                window.speechSynthesis.cancel();
-                
-                // 3. 延遲 100 毫秒播放，這能繞過 iOS 的某些瞬間阻擋
-                setTimeout(() => {
-                    window.speechSynthesis.speak(msg);
-                }, 100);
             } else {
                 resultBox.className = 'error';
                 resultBox.innerText = `❌ ${data.message}`;
