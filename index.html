@@ -43,12 +43,90 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
 
-        /* 左側：活動資訊欄 */
-        .info-sidebar { flex: 1; text-align: left; }
-        .info-sidebar h3, .history-sidebar h3 { color: #2c3e50; margin-top: 0; font-size: 1.6rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .info-item { margin-bottom: 15px; font-size: 1.2rem; color: #4a5568; line-height: 1.5; }
-        .info-item strong { color: #2d3748; display: block; margin-bottom: 3px; }
-        .event-img { width: 100%; height: 140px; object-fit: cover; border-radius: 10px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* ==========================================
+           左側：活動資訊與時間軸 (議程表)
+           ========================================== */
+        .info-sidebar { 
+            flex: 1; 
+            text-align: left; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-sidebar h3, .history-sidebar h3 { 
+            color: #2c3e50; 
+            margin-top: 0; 
+            font-size: 1.6rem; 
+            border-bottom: 2px solid #e2e8f0; 
+            padding-bottom: 10px; 
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        /* 議程表專屬容器 (可上下滑動) */
+        .schedule-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-top: 5px;
+        }
+
+        /* 自訂卷軸樣式 (讓卷軸變細變好看) */
+        .schedule-container::-webkit-scrollbar { width: 6px; }
+        .schedule-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .schedule-item {
+            display: flex;
+            flex-direction: column;
+            padding: 12px 10px;
+            border-bottom: 1px dashed #e2e8f0;
+            transition: background-color 0.2s;
+        }
+        .schedule-item:hover {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+        }
+        
+        .schedule-time {
+            font-size: 1rem;
+            color: #3b82f6;
+            font-weight: bold;
+            font-family: monospace;
+            margin-bottom: 4px;
+        }
+        
+        .schedule-title {
+            font-size: 1.15rem;
+            color: #1e293b;
+            font-weight: bold;
+        }
+        
+        .schedule-speaker {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* ==========================================
+           中間：長條形無人機 Banner 圖片
+           ========================================== */
+        .bottom-img-box { 
+            width: 100%;           /* 👈 和時鐘一樣 100% 滿寬 */
+            height: 150px;         /* 👈 固定高度 150px (配合 800x150 的比例) */
+            border-radius: 12px;   /* 👈 和時鐘一模一樣的圓弧角 */
+            border: 1px solid #e2e8f0; /* 👈 加上跟時鐘一樣的質感邊框 */
+            overflow: hidden; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+            margin: 15px 0 10px 0; /* 調整與上下的間距 */
+            background-color: #f8f9fa; /* 圖片還沒載入時的底色 */
+        }
+        .bottom-img-box img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* 👈 您自己做的圖放進來，就會完美填滿這個圓角框 */
+            display: block;
+        }
 
         /* 中間：掃描主畫面 */
         .scanner-section {
@@ -80,12 +158,85 @@
         .error { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .pending { background-color: #fff3cd; color: #856404; border: 2px solid #ffeeba; }
 
-        .bottom-img-box { width: 100%; height: 110px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin: 10px 0; }
-        .bottom-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .bottom-img-box { width: 100%;
+            height: 160px; /* 👈 把高度稍微調高一點點，給圖片更多空間 */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            margin: 10px 0;
+            background-color: #ffffff; /* 👈 加上白色背景，這樣比例不合時兩邊不會空空的 */
+        }
+        .bottom-img-box img { width: 100%;
+            height: 100%;
+            object-fit: contain; /* 👈 關鍵在這裡！改成 contain，圖片就會完整縮放，絕對不會再被裁切 */
+        }
 
-        .clock-container-inline { background: #f8f9fa; padding: 12px 20px; border-radius: 12px; width: 100%; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        .clock-label-inline { font-size: 1.3rem; font-weight: bold; color: #475569; }
-        .live-clock-inline { font-size: 1.8rem; font-weight: bold; color: #1e293b; font-family: monospace; letter-spacing: 1px; }
+        /* 中間：左右並排的大時鐘容器 */
+        .clock-container-inline {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 12px;
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* 👇 新增這兩行，讓無人機在框框內飛翔且不超出邊界 */
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        .clock-label-inline {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #475569;
+            position: relative;
+            z-index: 2; /* 確保文字在無人機上方 */
+        }
+        
+        .live-clock-inline {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e293b;
+            font-family: monospace;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 2; /* 確保文字在無人機上方 */
+        }
+
+        /* 👇 新增：四軸無人機動畫設定 */
+        .drone-animation {
+            position: absolute;
+            top: 50%;
+            margin-top: -20px; /* 垂直置中 */
+            right: -60px; /* 從右邊畫面外開始起飛 */
+            width: 40px;
+            height: 40px;
+            opacity: 0.8;
+            pointer-events: none; /* 讓滑鼠點擊穿透，不會干擾操作 */
+            z-index: 1; /* 在文字下方、背景上方 */
+            animation: flyAcross 12s linear infinite; /* 12秒飛越一次，無限循環 */
+        }
+
+        @keyframes flyAcross {
+            0% {
+                right: -60px;
+                transform: translateY(0px) rotate(-5deg); /* 機頭微微向下傾斜 */
+            }
+            25% {
+                transform: translateY(-4px) rotate(-2deg); /* 上下浮動感 */
+            }
+            50% {
+                transform: translateY(3px) rotate(-4deg);
+            }
+            75% {
+                transform: translateY(-2px) rotate(-1deg);
+            }
+            100% {
+                right: 110%; /* 飛到最左邊畫面外 */
+                transform: translateY(0px) rotate(-5deg);
+            }
+        }
 
         /* 右側：即時報到紀錄欄 */
         .history-sidebar { flex: 1; display: flex; flex-direction: column; }
@@ -114,37 +265,117 @@
 <body>
 
     <div class="main-wrapper">
+        <!-- 左側：活動議程表 -->
         <div class="panel-box info-sidebar">
-            <div>
-                <h3>📌 活動資訊</h3>
-                <div class="info-item"><strong>活動名稱：</strong><span>智慧運輸與永續發展研討會</span></div>
-                <div class="info-item"><strong>報到時間：</strong><span>08:30 - 09:00</span></div>
-                <div class="info-item"><strong>注意事項：</strong><span>系統具備防重複報到機制。</span></div>
+            <h3>秀傳夏日無人機嘉年華活動流程</h3>
+            <div class="schedule-container">
+                <div class="schedule-item">
+                    <div class="schedule-time">08:00 - 08:30</div>
+                    <div class="schedule-title">報到</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">08:30 - 08:40</div>
+                    <div class="schedule-title">長官致詞</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">08:40 - 09:25</div>
+                    <div class="schedule-title">專題演講 (1) 無人機的發展與實務應用</div>
+                    <div class="schedule-speaker">航見科技公司 | 張東琳 總經理</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">09:25 - 10:10</div>
+                    <div class="schedule-title">專題演講 (2) 新竹地區偏鄉山區無人機運送系統</div>
+                    <div class="schedule-speaker">臺大醫院急診醫學部 | 張家銘 醫師</div>
+                </div>
+                <div class="schedule-item" style="background-color: #fffbeb;">
+                    <div class="schedule-time">10:10 - 10:30</div>
+                    <div class="schedule-title" style="color: #d97706;">☕ 茶敘</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">10:30 - 11:15</div>
+                    <div class="schedule-title">專題演講 (3) 偏鄉照護零距離</div>
+                    <div class="schedule-speaker">花蓮慈濟醫院醫事室 | 張菁育 主任</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">11:15 - 12:00</div>
+                    <div class="schedule-title">專題演講 (4) 彰秀醫療無人機前瞻系統計畫</div>
+                    <div class="schedule-speaker">秀傳紀念醫院急診醫學部 | 陳穎信 醫師</div>
+                </div>
+                <div class="schedule-item" style="background-color: #f0fdf4;">
+                    <div class="schedule-time">12:00 - 13:15</div>
+                    <div class="schedule-title" style="color: #15803d;">🍱 午餐</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">13:15 - 13:30</div>
+                    <div class="schedule-title">報到</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">13:30 - 14:00</div>
+                    <div class="schedule-title">無人機情境演練說明與分組</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">14:00 - 16:40</div>
+                    <div class="schedule-title">✈️ 實境模擬與體驗</div>
+                    <div class="schedule-speaker">
+                        • 無人機情境模擬闖關 (A廳)<br>
+                        • 無人機足球體驗 (B廳)<br>
+                        • 觀摩飛行演練 (延平公園等)
+                    </div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">16:40 - 17:00</div>
+                    <div class="schedule-title">大會總結 / 嘉賓分享</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">17:00 -</div>
+                    <div class="schedule-title">賦歸</div>
+                </div>
             </div>
-            <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80" alt="活動圖片" class="event-img">
         </div>
 
         <div class="scanner-section">
             <div class="scanner-top">
-                <h2>📷 快速報到掃描台</h2>
+                <h2> 報到掃描Qrcode</h2>
                 <div id="scan-trigger-bar" class="scan-trigger-bar" onclick="startCamera()">👉 點擊此處展開相機對準掃描區掃描</div>
                 <div id="reader"></div>
                 <div id="result-box"></div>
             </div>
 
             <div class="bottom-img-box">
-                <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=600&q=80" alt="下方插圖">
+                <img src="drone.png" alt="無人機足球橫幅">
             </div>
 
             <div class="clock-container-inline">
                 <span class="clock-label-inline">目前時間：</span>
+                <!-- 👇 新增：四軸物流無人機 SVG -->
+                <svg class="drone-animation" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 機身 -->
+                    <rect x="24" y="28" width="16" height="8" rx="2" fill="#334155"/>
+                    <!-- 左機臂 -->
+                    <path d="M24 32 L10 28" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                    <!-- 右機臂 -->
+                    <path d="M40 32 L54 28" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                    <!-- 左螺旋槳支架 -->
+                    <line x1="10" y1="28" x2="10" y2="22" stroke="#64748b" stroke-width="2"/>
+                    <!-- 右螺旋槳支架 -->
+                    <line x1="54" y1="28" x2="54" y2="22" stroke="#64748b" stroke-width="2"/>
+                    <!-- 左螺旋槳 (半透明營造轉動感) -->
+                    <ellipse cx="10" cy="20" rx="9" ry="2" fill="#94a3b8" opacity="0.9"/>
+                    <!-- 右螺旋槳 -->
+                    <ellipse cx="54" cy="20" rx="9" ry="2" fill="#94a3b8" opacity="0.9"/>
+                    <!-- 物流酬載箱 (醫療/運輸質感) -->
+                    <rect x="27" y="36" width="10" height="7" rx="1.5" fill="#0ea5e9"/>
+                    <path d="M32 36 L32 43" stroke="#e0f2fe" stroke-width="1.5"/>
+                    <!-- 狀態指示燈 (紅燈) -->
+                    <circle cx="36" cy="32" r="1.5" fill="#ef4444"/>
+                </svg>
                 <span id="live-clock" class="live-clock-inline">00:00:00</span>
             </div>
         </div>
 
         <div class="panel-box history-sidebar">
             <div>
-                <h3>📋 即時報到動態</h3>
+                <h3> 即時報到動態</h3>
                 <div class="stats-box" id="stats-counter">目前報到人數：計算中...</div>
             </div>
             <div class="history-list" id="history-list">
