@@ -14,7 +14,6 @@
         .pending { background-color: #fff3cd; color: #856404; }
         button { margin-top: 20px; padding: 15px 30px; font-size: 1.2em; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         #start-camera-btn { background-color: #343a40; color: white; display: inline-block; }
-        #next-btn { background-color: #007bff; color: white; display: none; }
     </style>
 </head>
 <body>
@@ -24,11 +23,10 @@
     
     <div id="reader"></div>
     <div id="result-box"></div>
-    
-    <button id="next-btn" onclick="resetScanner()">掃描下一位</button>
 
     <script>
         let html5QrCode;
+        let isProcessing = false; // 防止連續重複觸發的鎖
 
         function startCamera() {
             document.getElementById('start-camera-btn').style.display = 'none';
@@ -38,7 +36,11 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
-                    // 一旦掃到 QR Code，立刻暫停相機並直接發送資料
+                    // 如果正在處理上一筆，就先忽略，避免連續刷到同一個人
+                    if (isProcessing) return;
+                    isProcessing = true;
+
+                    // 暫停相機並發送
                     html5QrCode.pause(); 
                     sendToCheckIn(decodedText);
                 }
@@ -49,7 +51,7 @@
             const resultBox = document.getElementById('result-box');
             resultBox.style.display = 'block';
             resultBox.className = 'pending';
-            resultBox.innerText = `資料傳送中...請稍候`;
+            resultBox.innerText = `資料傳送中...`;
 
             // 👇👇👇 請務必確認這裡的 GAS 網址是正確的 👇👇👇
             const url = 'https://script.google.com/macros/s/AKfycbyamn06IZbBiDqd44zs-vzlAlIB_TdNLzNPY1voyoPKrMGqUuhrSk0B4PQKRUJl66rv/exec'; 
@@ -61,7 +63,6 @@
 
         function handleResponse(data) {
             const resultBox = document.getElementById('result-box');
-            const nextBtn = document.getElementById('next-btn');
             
             if(data.status === 'success') {
                 resultBox.className = 'success';
@@ -70,13 +71,13 @@
                 resultBox.className = 'error';
                 resultBox.innerText = `❌ ${data.message}`;
             }
-            nextBtn.style.display = 'inline-block';
-        }
 
-        function resetScanner() {
-            document.getElementById('result-box').style.display = 'none';
-            document.getElementById('next-btn').style.display = 'none';
-            html5QrCode.resume(); 
+            // 顯示結果 1.5 秒後，自動恢復相機，進入下一位掃描
+            setTimeout(() => {
+                resultBox.style.display = 'none';
+                html5QrCode.resume();
+                isProcessing = false; // 解除鎖定，可以掃下一位了
+            }, 1500);
         }
     </script>
 </body>
