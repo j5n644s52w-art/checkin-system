@@ -15,10 +15,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
+            font-size: 1.2rem; /* 全面放大基礎字體 */
         }
 
-        /* 佔滿整個介面的三欄主容器 */
         .main-wrapper {
             display: flex;
             flex-direction: row;
@@ -31,14 +31,13 @@
             border-radius: 0;
             box-shadow: none;
             overflow: hidden;
-            padding: 25px;
+            padding: 20px;
         }
 
-        /* 欄位通用樣式 */
         .panel-box {
             background: #f8f9fa;
             border-radius: 16px;
-            padding: 25px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -54,14 +53,14 @@
         .info-sidebar h3, .history-sidebar h3 {
             color: #2c3e50;
             margin-top: 0;
-            font-size: 1.3rem;
+            font-size: 1.6rem; /* 字體加大 */
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 10px;
         }
 
         .info-item {
             margin-bottom: 15px;
-            font-size: 0.95rem;
+            font-size: 1.2rem; /* 字體加大 */
             color: #4a5568;
             line-height: 1.5;
         }
@@ -74,49 +73,51 @@
 
         .event-img {
             width: 100%;
-            height: 160px;
+            height: 140px;
             object-fit: cover;
             border-radius: 10px;
-            margin-top: 15px;
+            margin-top: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* 中間：掃描主畫面 */
+        /* 中間：掃描主畫面 (上中下三區塊) */
         .scanner-section {
-            flex: 1.2;
+            flex: 1.3;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between; /* 均勻分佈上下中 */
             text-align: center;
             background: #ffffff;
             border: 2px dashed #e2e8f0;
             border-radius: 16px;
-            padding: 20px;
+            padding: 15px;
+        }
+
+        .scanner-top {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h2 { 
             color: #2c3e50; 
             margin-top: 0;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
+            font-size: 1.8rem; /* 字體加大 */
+            margin-bottom: 10px;
         }
 
         #start-camera-btn { 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; 
             border: none;
-            padding: 16px 32px;
-            font-size: 1.2rem;
+            padding: 14px 28px;
+            font-size: 1.3rem;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-        }
-        #start-camera-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
         #reader { 
@@ -125,16 +126,17 @@
             border-radius: 12px;
             overflow: hidden;
             display: none; 
+            max-height: 320px;
         }
         #reader video {
             border-radius: 12px;
         }
 
         #result-box { 
-            margin-top: 15px; 
-            padding: 15px; 
+            margin-top: 10px; 
+            padding: 12px; 
             border-radius: 12px; 
-            font-size: 1.2rem; 
+            font-size: 1.3rem; 
             font-weight: bold; 
             display: none; 
             width: 100%;
@@ -144,33 +146,42 @@
         .error { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .pending { background-color: #fff3cd; color: #856404; border: 2px solid #ffeeba; }
 
-        /* 即時大時鐘樣式 */
-        .clock-container {
-            margin-top: 15px;
+        /* 中間區塊：左右並排的大時鐘 */
+        .clock-container-inline {
             background: #f8f9fa;
             padding: 12px 20px;
             border-radius: 12px;
             width: 100%;
             border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .clock-label {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-bottom: 2px;
-            letter-spacing: 1px;
+        .clock-label-inline {
+            font-size: 1.3rem; /* 左右並排文字放大 */
+            font-weight: bold;
+            color: #475569;
         }
-        .live-clock {
-            font-size: 2.2rem;
+        .live-clock-inline {
+            font-size: 1.8rem; /* 時鐘數字加大 */
             font-weight: bold;
             color: #1e293b;
             font-family: monospace;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
 
-        .footer-note {
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #7f8c8d;
+        /* 下方區塊：自訂圖片插槽 */
+        .bottom-img-box {
+            width: 100%;
+            height: 110px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .bottom-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* 右側：即時報到紀錄欄 */
@@ -182,9 +193,9 @@
 
         .stats-box {
             background: #e2e8f0;
-            padding: 12px;
+            padding: 14px;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 1.3rem; /* 字體加大 */
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 15px;
@@ -202,9 +213,9 @@
         }
 
         .history-item {
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 0.95rem;
+            font-size: 1.15rem; /* 右側動態字體加大 */
             color: #334155;
             text-align: left;
             animation: fadeIn 0.3s ease-in-out;
@@ -212,13 +223,13 @@
 
         .history-item strong {
             color: #0f172a;
+            font-size: 1.25rem;
         }
 
         .history-time {
-            font-size: 0.8rem;
+            font-size: 1rem; /* 時間字體加大 */
             color: #64748b;
-            float: right;
-            margin-top: 3px;
+            margin-top: 5px;
         }
 
         @keyframes fadeIn {
@@ -226,7 +237,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 手機響應式 */
         @media (max-width: 1024px) {
             body { height: auto; padding: 10px; }
             .main-wrapper {
@@ -261,22 +271,25 @@
             <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80" alt="活動圖片" class="event-img">
         </div>
 
-        <!-- 中間：掃描主畫面 + 即時大時鐘 -->
+        <!-- 中間：掃描主畫面 (上:QR / 中:左右時鐘 / 下:圖片) -->
         <div class="scanner-section">
-            <h2>📷 快速報到掃描台</h2>
-            
-            <button id="start-camera-btn" onclick="startCamera()">開啟相機掃描</button>
-            
-            <div id="reader"></div>
-            <div id="result-box"></div>
-            
-            <!-- 大字體即時時鐘區域 -->
-            <div class="clock-container">
-                <div class="clock-label">目前時間</div>
-                <div id="live-clock" class="live-clock">00:00:00</div>
+            <div class="scanner-top">
+                <h2>📷 快速報到掃描台</h2>
+                <button id="start-camera-btn" onclick="startCamera()">開啟相機掃描</button>
+                <div id="reader"></div>
+                <div id="result-box"></div>
             </div>
-            
-            <div class="footer-note">對準來賓 QR Code 即可自動完成報到</div>
+
+            <!-- 中間：左右並排的大時鐘 -->
+            <div class="clock-container-inline">
+                <span class="clock-label-inline">目前時間：</span>
+                <span id="live-clock" class="live-clock-inline">00:00:00</span>
+            </div>
+
+            <!-- 下方：您可自行更換 src 網址來插入圖片 -->
+            <div class="bottom-img-box">
+                <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=600&q=80" alt="下方插圖">
+            </div>
         </div>
 
         <!-- 右側：即時報到紀錄與人數統計 -->
@@ -286,7 +299,7 @@
                 <div class="stats-box" id="stats-counter">目前報到人數：0 人</div>
             </div>
             <div class="history-list" id="history-list">
-                <div style="color: #94a3b8; text-align: center; margin-top: 20px; font-size: 0.9rem;">尚無報到紀錄</div>
+                <div style="color: #94a3b8; text-align: center; margin-top: 30px; font-size: 1.1rem;">尚無報到紀錄</div>
             </div>
         </div>
     </div>
@@ -296,7 +309,6 @@
         let isProcessing = false;
         let checkInCount = 0;
 
-        // 即時更新時鐘函式
         function updateClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -304,9 +316,8 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('live-clock').innerText = `${hours}:${minutes}:${seconds}`;
         }
-        // 每秒執行一次時鐘更新
         setInterval(updateClock, 1000);
-        updateClock(); // 網頁載入時立刻顯示
+        updateClock();
 
         function startCamera() {
             document.getElementById('start-camera-btn').style.display = 'none';
@@ -315,7 +326,7 @@
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 220, height: 220 } },
+                { fps: 10, qrbox: { width: 200, height: 200 } },
                 (decodedText) => {
                     if (isProcessing) return;
                     isProcessing = true;
@@ -342,11 +353,11 @@
             .then(response => response.json())
             .then(data => {
                 const now = new Date();
-                const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
                 if(data.status === 'success') {
                     resultBox.className = 'success';
-                    resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.1rem; color: #2d3748;">來賓：${data.guest_name}</span>`;
+                    resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.2rem; color: #2d3748;">來賓：${data.guest_name}</span>`;
                     
                     checkInCount++;
                     document.getElementById('stats-counter').innerText = `目前報到人數：${checkInCount} 人`;
@@ -356,9 +367,10 @@
                         historyList.innerHTML = '';
                     }
                     
+                    // 右側改為：貴賓 某某某 完成報到！ ＋ 報到時間
                     const newItem = document.createElement('div');
                     newItem.className = 'history-item';
-                    newItem.innerHTML = `<strong>${data.guest_name}</strong> 完成報到<div class="history-time">${timeString}</div>`;
+                    newItem.innerHTML = `貴賓 <strong>${data.guest_name}</strong> 完成報到！<div class="history-time">報到時間：${timeString}</div>`;
                     historyList.prepend(newItem);
 
                 } else {
