@@ -150,7 +150,31 @@
             100% { opacity: 0.9; transform: scale(1); }
         }
 
-        #reader { width: 100% !important; border: none !important; border-radius: 12px; overflow: hidden; display: none; }
+        #cover-image {
+            width: 100%;
+            height: 300px; /* 固定高度避免畫面跳動 */
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        #cover-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* 相機畫面 */
+        #reader { 
+            width: 100% !important; 
+            border: none !important;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none; 
+            cursor: pointer; /* 滑鼠移上去變手指，暗示可點擊關閉 */
+        }
+        #reader video {
+            border-radius: 12px;
+        }
         #reader video { border-radius: 12px; }
         #result-box { margin-top: 10px; padding: 12px; border-radius: 12px; font-size: 1.3rem; font-weight: bold; display: none; width: 100%; }
 
@@ -335,12 +359,22 @@
 
         <div class="scanner-section">
             <div class="scanner-top">
-                <h2> 報到掃描Qrcode</h2>
-                <div id="scan-trigger-bar" class="scan-trigger-bar" onclick="startCamera()">👉 點擊此處展開相機對準掃描區掃描</div>
-                <div id="reader"></div>
+                <h2>報到掃描</h2>
+                
+                <!-- 狀態提示列 (點擊也能切換) -->
+                <div id="scan-trigger-bar" class="scan-trigger-bar" onclick="toggleScanner()">
+                    歡迎您參加無人機夏日嘉年華
+                </div>
+                
+                <!-- 待機圖片  -->
+                <img id="cover-image" src="Soccer.png" alt="無人機待機圖" onclick="toggleScanner()">
+
+                <!-- 相機掃描畫面 (點擊也能關閉切換回圖片) -->
+                <div id="reader" onclick="toggleScanner()"></div>
+                
                 <div id="result-box"></div>
             </div>
-
+             <!-- 長條橫幅 -->
             <div class="bottom-img-box">
                 <img src="drone.png" alt="無人機足球橫幅">
             </div>
@@ -403,21 +437,56 @@
         updateClock();
 
         // 開啟相機
-        function startCamera() {
-            document.getElementById('scan-trigger-bar').style.display = 'none';
-            document.getElementById('reader').style.display = 'block';
-            
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 180, height: 180 } },
-                (decodedText) => {
-                    if (isProcessing) return;
-                    isProcessing = true;
-                    html5QrCode.pause(); 
-                    sendToCheckIn(decodedText);
+        let isCameraRunning = false; // 紀錄相機目前的狀態
+
+        // 雙向切換相機與圖片
+        function toggleScanner() {
+            const readerDiv = document.getElementById('reader');
+            const coverImg = document.getElementById('cover-image');
+            const triggerBar = document.getElementById('scan-trigger-bar');
+
+            if (!isCameraRunning) {
+                // 【狀態 1：開啟相機】
+                coverImg.style.display = 'none';
+                readerDiv.style.display = 'block';
+                triggerBar.innerHTML = "可以對準畫面掃描Qrcode唷~~~";
+                triggerBar.style.background = "linear-gradient(135deg, #f6d365 0%, #fda085 100%)"; // 變成橘黃色提示
+                
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("reader");
                 }
-            ).catch(err => alert("相機啟動失敗，請確認是否允許相機權限"));
+                
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 180, height: 180 } },
+                    (decodedText) => {
+                        if (isProcessing) return;
+                        isProcessing = true;
+                        html5QrCode.pause(); 
+                        sendToCheckIn(decodedText);
+                    }
+                ).then(() => {
+                    isCameraRunning = true;
+                }).catch(err => {
+                    alert("相機啟動失敗，請確認是否允許相機權限");
+                    // 失敗時恢復原狀
+                    coverImg.style.display = 'block';
+                    readerDiv.style.display = 'none';
+                    triggerBar.innerHTML = "👉 點擊圖片開啟相機掃描";
+                });
+
+            } else {
+                // 【狀態 2：關閉相機，顯示圖片】
+                if (html5QrCode) {
+                    html5QrCode.stop().then(() => {
+                        isCameraRunning = false;
+                        readerDiv.style.display = 'none';
+                        coverImg.style.display = 'block';
+                        triggerBar.innerHTML = "歡迎您參加無人機夏日嘉年華";
+                        triggerBar.style.background = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"; // 變回紫色
+                    }).catch(err => console.error("關閉相機錯誤:", err));
+                }
+            }
         }
 
         // 發送報到資料
@@ -441,8 +510,11 @@
 
                 setTimeout(() => {
                     resultBox.style.display = 'none';
-                    if (html5QrCode) {
+                    // 加上 isCameraRunning 判斷，確保相機還開著才恢復掃描
+                    if (html5QrCode && isCameraRunning) {
                         html5QrCode.resume();
+                        isProcessing = false;
+                    } else {
                         isProcessing = false;
                     }
                 }, 1500);
