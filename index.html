@@ -10,44 +10,51 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 20px;
         }
 
-        /* 雙欄主容器 (預設為電腦版型) */
+        /* 佔滿整個介面的三欄主容器 */
         .main-wrapper {
             display: flex;
             flex-direction: row;
             gap: 20px;
-            width: 100%;
-            max-width: 950px;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
             background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-radius: 0;
+            box-shadow: none;
             overflow: hidden;
-            padding: 30px;
+            padding: 25px;
         }
 
-        /* 左側：活動資訊欄 (電腦版顯示) */
-        .info-sidebar {
-            flex: 1;
+        /* 欄位通用樣式 */
+        .panel-box {
             background: #f8f9fa;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 25px;
-            text-align: left;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
 
-        .info-sidebar h3 {
+        /* 左側：活動資訊欄 */
+        .info-sidebar {
+            flex: 1;
+            text-align: left;
+        }
+
+        .info-sidebar h3, .history-sidebar h3 {
             color: #2c3e50;
             margin-top: 0;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 10px;
         }
@@ -67,14 +74,14 @@
 
         .event-img {
             width: 100%;
-            height: 150px;
+            height: 160px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-top: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* 右側：掃描主畫面 */
+        /* 中間：掃描主畫面 */
         .scanner-section {
             flex: 1.2;
             display: flex;
@@ -82,18 +89,19 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 10px;
+            background: #ffffff;
+            border: 2px dashed #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
         }
 
         h2 { 
             color: #2c3e50; 
             margin-top: 0;
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
         }
 
-        /* 開啟相機按鈕 */
         #start-camera-btn { 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; 
@@ -111,39 +119,30 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
-        /* 掃描器外框 */
         #reader { 
             width: 100% !important; 
             border: none !important;
             border-radius: 12px;
             overflow: hidden;
             display: none; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         #reader video {
             border-radius: 12px;
         }
 
-        /* 狀態提示卡片 */
         #result-box { 
             margin-top: 20px; 
             padding: 15px; 
             border-radius: 12px; 
-            font-size: 1.3rem; 
+            font-size: 1.2rem; 
             font-weight: bold; 
             display: none; 
             width: 100%;
-            animation: fadeIn 0.3s ease-in-out;
         }
 
         .success { background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .pending { background-color: #fff3cd; color: #856404; border: 2px solid #ffeeba; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
 
         .footer-note {
             margin-top: 15px;
@@ -151,35 +150,76 @@
             color: #7f8c8d;
         }
 
-        /* ==========================================
-           手機專用模式：螢幕寬度小於 768px 時觸發
-           ========================================== */
-        @media (max-width: 768px) {
-            body {
-                background: #ffffff; /* 手機上改為純白背景，畫面更簡潔 */
-                padding: 10px;
-            }
+        /* 右側：即時報到紀錄欄 */
+        .history-sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-box {
+            background: #e2e8f0;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            max-height: calc(100vh - 180px);
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            color: #334155;
+            text-align: left;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .history-item strong {
+            color: #0f172a;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: #64748b;
+            float: right;
+            margin-top: 3px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 手機響應式：螢幕較小時自動變成上下堆疊 */
+        @media (max-width: 1024px) {
+            body { height: auto; padding: 10px; }
             .main-wrapper {
-                box-shadow: none;
+                flex-direction: column;
+                height: auto;
                 padding: 15px;
-                max-width: 100%;
             }
-            /* 直接把左側的活動資訊欄完全隱藏，只留掃描畫面 */
-            .info-sidebar {
-                display: none !important;
-            }
-            h2 {
-                font-size: 1.4rem;
-                margin-bottom: 15px;
-            }
+            .info-sidebar { display: none; } /* 手機版隱藏左側資訊，專注掃描 */
         }
     </style>
 </head>
 <body>
 
     <div class="main-wrapper">
-        <!-- 左側：活動資訊欄 (僅在電腦版顯示，手機版會自動隱藏) -->
-        <div class="info-sidebar">
+        <!-- 左側：活動資訊欄 -->
+        <div class="panel-box info-sidebar">
             <div>
                 <h3>📌 活動資訊</h3>
                 <div class="info-item">
@@ -192,13 +232,13 @@
                 </div>
                 <div class="info-item">
                     <strong>注意事項：</strong>
-                    <span>系統具備防重複報到機制，若遇異常請引導至服務台。</span>
+                    <span>系統具備防重複報到機制。</span>
                 </div>
             </div>
             <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80" alt="活動圖片" class="event-img">
         </div>
 
-        <!-- 右側：掃描主畫面 (電腦與手機都會顯示) -->
+        <!-- 中間：掃描主畫面 -->
         <div class="scanner-section">
             <h2>📷 快速報到掃描台</h2>
             
@@ -209,11 +249,23 @@
             
             <div class="footer-note">對準來賓 QR Code 即可自動完成報到</div>
         </div>
+
+        <!-- 右側：即時報到紀錄與人數統計 -->
+        <div class="panel-box history-sidebar">
+            <div>
+                <h3>📋 即時報到動態</h3>
+                <div class="stats-box" id="stats-counter">目前報到人數：0 人</div>
+            </div>
+            <div class="history-list" id="history-list">
+                <div style="color: #94a3b8; text-align: center; margin-top: 20px; font-size: 0.9rem;">尚無報到紀錄</div>
+            </div>
+        </div>
     </div>
 
     <script>
         let html5QrCode;
         let isProcessing = false;
+        let checkInCount = 0; // 計算報到人數
 
         function startCamera() {
             document.getElementById('start-camera-btn').style.display = 'none';
@@ -248,9 +300,28 @@
             })
             .then(response => response.json())
             .then(data => {
+                const now = new Date();
+                const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
                 if(data.status === 'success') {
                     resultBox.className = 'success';
                     resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.1rem; color: #2d3748;">來賓：${data.guest_name}</span>`;
+                    
+                    // 更新報到人數與右側紀錄
+                    checkInCount++;
+                    document.getElementById('stats-counter').innerText = `目前報到人數：${checkInCount} 人`;
+                    
+                    const historyList = document.getElementById('history-list');
+                    // 如果是第一筆，清除原本的提示文字
+                    if (checkInCount === 1) {
+                        historyList.innerHTML = '';
+                    }
+                    
+                    const newItem = document.createElement('div');
+                    newItem.className = 'history-item';
+                    newItem.innerHTML = `<strong>${data.guest_name}</strong> 完成報到<div class="history-time">${timeString}</div>`;
+                    historyList.prepend(newItem); // 新的紀錄排在最上面
+
                 } else {
                     resultBox.className = 'error';
                     resultBox.innerText = `❌ ${data.message}`;
