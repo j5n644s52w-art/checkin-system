@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>活動快速報到系統</title>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -16,7 +15,7 @@
             justify-content: center;
             align-items: center;
             padding: 15px;
-            font-size: 1.2rem; /* 全面放大基礎字體 */
+            font-size: 1.2rem;
         }
 
         .main-wrapper {
@@ -53,14 +52,14 @@
         .info-sidebar h3, .history-sidebar h3 {
             color: #2c3e50;
             margin-top: 0;
-            font-size: 1.6rem; /* 字體加大 */
+            font-size: 1.6rem;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 10px;
         }
 
         .info-item {
             margin-bottom: 15px;
-            font-size: 1.2rem; /* 字體加大 */
+            font-size: 1.2rem;
             color: #4a5568;
             line-height: 1.5;
         }
@@ -80,18 +79,18 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* 中間：掃描主畫面 (上中下三區塊) */
+        /* 中間：實體掃描器專用主畫面 (上中下三區塊) */
         .scanner-section {
             flex: 1.3;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between; /* 均勻分佈上下中 */
+            justify-content: space-between;
             text-align: center;
             background: #ffffff;
             border: 2px dashed #e2e8f0;
             border-radius: 16px;
-            padding: 15px;
+            padding: 20px;
         }
 
         .scanner-top {
@@ -99,44 +98,42 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            flex: 1;
         }
 
         h2 { 
             color: #2c3e50; 
             margin-top: 0;
-            font-size: 1.8rem; /* 字體加大 */
-            margin-bottom: 10px;
+            font-size: 2rem;
+            margin-bottom: 15px;
         }
 
-        #start-camera-btn { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; 
-            border: none;
-            padding: 14px 28px;
-            font-size: 1.3rem;
-            border-radius: 50px;
-            cursor: pointer;
+        /* 提示工作人員使用實體掃描器刷碼的框框 */
+        .scanner-instruction {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 25px;
+            border-radius: 12px;
+            font-size: 1.4rem;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            width: 100%;
+            border: 2px solid #bae6fd;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
         }
 
-        #reader { 
-            width: 100% !important; 
-            border: none !important;
-            border-radius: 12px;
-            overflow: hidden;
-            display: none; 
-            max-height: 320px;
-        }
-        #reader video {
-            border-radius: 12px;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         #result-box { 
             margin-top: 10px; 
-            padding: 12px; 
+            padding: 15px; 
             border-radius: 12px; 
-            font-size: 1.3rem; 
+            font-size: 1.4rem; 
             font-weight: bold; 
             display: none; 
             width: 100%;
@@ -146,34 +143,35 @@
         .error { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .pending { background-color: #fff3cd; color: #856404; border: 2px solid #ffeeba; }
 
-        /* 中間區塊：左右並排的大時鐘 */
+        /* 中間：左右並排的大時鐘 */
         .clock-container-inline {
             background: #f8f9fa;
-            padding: 12px 20px;
+            padding: 15px 20px;
             border-radius: 12px;
             width: 100%;
             border: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin: 10px 0;
         }
         .clock-label-inline {
-            font-size: 1.3rem; /* 左右並排文字放大 */
+            font-size: 1.4rem;
             font-weight: bold;
             color: #475569;
         }
         .live-clock-inline {
-            font-size: 1.8rem; /* 時鐘數字加大 */
+            font-size: 2rem;
             font-weight: bold;
             color: #1e293b;
             font-family: monospace;
             letter-spacing: 1px;
         }
 
-        /* 下方區塊：自訂圖片插槽 */
+        /* 下方：自訂圖片插槽 */
         .bottom-img-box {
             width: 100%;
-            height: 110px;
+            height: 120px;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -195,7 +193,7 @@
             background: #e2e8f0;
             padding: 14px;
             border-radius: 10px;
-            font-size: 1.3rem; /* 字體加大 */
+            font-size: 1.3rem;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 15px;
@@ -215,7 +213,7 @@
         .history-item {
             padding: 12px;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 1.15rem; /* 右側動態字體加大 */
+            font-size: 1.15rem;
             color: #334155;
             text-align: left;
             animation: fadeIn 0.3s ease-in-out;
@@ -227,7 +225,7 @@
         }
 
         .history-time {
-            font-size: 1rem; /* 時間字體加大 */
+            font-size: 1rem;
             color: #64748b;
             margin-top: 5px;
         }
@@ -271,12 +269,13 @@
             <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80" alt="活動圖片" class="event-img">
         </div>
 
-        <!-- 中間：掃描主畫面 (上:QR / 中:左右時鐘 / 下:圖片) -->
+        <!-- 中間：實體掃描器專用主畫面 -->
         <div class="scanner-section">
             <div class="scanner-top">
-                <h2>📷 快速報到掃描台</h2>
-                <button id="start-camera-btn" onclick="startCamera()">開啟相機掃描</button>
-                <div id="reader"></div>
+                <h2>⚡ 實體掃描槍報到台</h2>
+                <div class="scanner-instruction">
+                    請直接使用掃描槍刷取來賓 QR Code 條碼
+                </div>
                 <div id="result-box"></div>
             </div>
 
@@ -305,10 +304,11 @@
     </div>
 
     <script>
-        let html5QrCode;
-        let isProcessing = false;
         let checkInCount = 0;
+        let scannedBuffer = '';
+        let lastKeyTime = Date.now();
 
+        // 即時時鐘
         function updateClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -319,23 +319,25 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        function startCamera() {
-            document.getElementById('start-camera-btn').style.display = 'none';
-            document.getElementById('reader').style.display = 'block';
+        // 監聽實體掃描槍輸入（掃描槍會像鍵盤一樣快速連續輸入字元並以 Enter 結尾）
+        document.addEventListener('keypress', function(e) {
+            const currentTime = Date.now();
             
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 200, height: 200 } },
-                (decodedText) => {
-                    if (isProcessing) return;
-                    isProcessing = true;
+            // 如果距離上一個字元超過 100 毫秒，代表可能是人工手動打字，重置緩衝區
+            if (currentTime - lastKeyTime > 100) {
+                scannedBuffer = '';
+            }
+            lastKeyTime = currentTime;
 
-                    html5QrCode.pause(); 
-                    sendToCheckIn(decodedText);
+            if (e.key === 'Enter') {
+                if (scannedBuffer.trim().length > 0) {
+                    sendToCheckIn(scannedBuffer.trim());
+                    scannedBuffer = '';
                 }
-            ).catch(err => alert("相機啟動失敗，請確認是否允許相機權限"));
-        }
+            } else {
+                scannedBuffer += e.key;
+            }
+        });
 
         function sendToCheckIn(qrId) {
             const resultBox = document.getElementById('result-box');
@@ -357,7 +359,7 @@
 
                 if(data.status === 'success') {
                     resultBox.className = 'success';
-                    resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.2rem; color: #2d3748;">來賓：${data.guest_name}</span>`;
+                    resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.3rem; color: #2d3748;">貴賓：${data.guest_name}</span>`;
                     
                     checkInCount++;
                     document.getElementById('stats-counter').innerText = `目前報到人數：${checkInCount} 人`;
@@ -367,7 +369,6 @@
                         historyList.innerHTML = '';
                     }
                     
-                    // 右側改為：貴賓 某某某 完成報到！ ＋ 報到時間
                     const newItem = document.createElement('div');
                     newItem.className = 'history-item';
                     newItem.innerHTML = `貴賓 <strong>${data.guest_name}</strong> 完成報到！<div class="history-time">報到時間：${timeString}</div>`;
@@ -378,10 +379,9 @@
                     resultBox.innerText = `❌ ${data.message}`;
                 }
 
+                // 顯示結果 1.5 秒後自動隱藏，準備迎接下一位
                 setTimeout(() => {
                     resultBox.style.display = 'none';
-                    html5QrCode.resume();
-                    isProcessing = false;
                 }, 1500);
             })
             .catch(error => {
@@ -391,8 +391,6 @@
 
                 setTimeout(() => {
                     resultBox.style.display = 'none';
-                    html5QrCode.resume();
-                    isProcessing = false;
                 }, 2000);
             });
         }
