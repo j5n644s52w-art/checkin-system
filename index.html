@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>活動快速報到系統</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -79,7 +80,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* 中間：實體掃描器專用主畫面 (上中下三區塊) */
+        /* 中間：掃描主畫面 (上:QR / 中:時鐘 / 下:圖片) */
         .scanner-section {
             flex: 1.3;
             display: flex;
@@ -98,42 +99,43 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            flex: 1;
         }
 
         h2 { 
             color: #2c3e50; 
             margin-top: 0;
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
         }
 
-        /* 提示工作人員使用實體掃描器刷碼的框框 */
-        .scanner-instruction {
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 25px;
-            border-radius: 12px;
-            font-size: 1.4rem;
+        #start-camera-btn { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
             font-weight: bold;
-            width: 100%;
-            border: 2px solid #bae6fd;
-            margin-bottom: 15px;
-            animation: pulse 2s infinite;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
+        #reader { 
+            width: 100% !important; 
+            border: none !important;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none; 
+        }
+        #reader video {
+            border-radius: 12px;
         }
 
         #result-box { 
             margin-top: 10px; 
-            padding: 15px; 
+            padding: 12px; 
             border-radius: 12px; 
-            font-size: 1.4rem; 
+            font-size: 1.3rem; 
             font-weight: bold; 
             display: none; 
             width: 100%;
@@ -146,7 +148,7 @@
         /* 中間：左右並排的大時鐘 */
         .clock-container-inline {
             background: #f8f9fa;
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-radius: 12px;
             width: 100%;
             border: 1px solid #e2e8f0;
@@ -156,12 +158,12 @@
             margin: 10px 0;
         }
         .clock-label-inline {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: #475569;
         }
         .live-clock-inline {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #1e293b;
             font-family: monospace;
@@ -171,7 +173,7 @@
         /* 下方：自訂圖片插槽 */
         .bottom-img-box {
             width: 100%;
-            height: 120px;
+            height: 110px;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -269,13 +271,12 @@
             <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80" alt="活動圖片" class="event-img">
         </div>
 
-        <!-- 中間：實體掃描器專用主畫面 -->
+        <!-- 中間：掃描主畫面 (上:QR相機 / 中:大時鐘 / 下:自訂圖片) -->
         <div class="scanner-section">
             <div class="scanner-top">
-                <h2>⚡ 實體掃描槍報到台</h2>
-                <div class="scanner-instruction">
-                    請直接使用掃描槍刷取來賓 QR Code 條碼
-                </div>
+                <h2>📷 快速報到掃描台</h2>
+                <button id="start-camera-btn" onclick="startCamera()">開啟相機掃描</button>
+                <div id="reader"></div>
                 <div id="result-box"></div>
             </div>
 
@@ -285,7 +286,7 @@
                 <span id="live-clock" class="live-clock-inline">00:00:00</span>
             </div>
 
-            <!-- 下方：您可自行更換 src 網址來插入圖片 -->
+            <!-- 下方：自訂圖片插槽 (可自行替換 src 網址) -->
             <div class="bottom-img-box">
                 <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=600&q=80" alt="下方插圖">
             </div>
@@ -304,9 +305,9 @@
     </div>
 
     <script>
+        let html5QrCode;
+        let isProcessing = false;
         let checkInCount = 0;
-        let scannedBuffer = '';
-        let lastKeyTime = Date.now();
 
         // 即時時鐘
         function updateClock() {
@@ -319,25 +320,23 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 監聽實體掃描槍輸入（掃描槍會像鍵盤一樣快速連續輸入字元並以 Enter 結尾）
-        document.addEventListener('keypress', function(e) {
-            const currentTime = Date.now();
+        function startCamera() {
+            document.getElementById('start-camera-btn').style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
             
-            // 如果距離上一個字元超過 100 毫秒，代表可能是人工手動打字，重置緩衝區
-            if (currentTime - lastKeyTime > 100) {
-                scannedBuffer = '';
-            }
-            lastKeyTime = currentTime;
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 180, height: 180 } },
+                (decodedText) => {
+                    if (isProcessing) return;
+                    isProcessing = true;
 
-            if (e.key === 'Enter') {
-                if (scannedBuffer.trim().length > 0) {
-                    sendToCheckIn(scannedBuffer.trim());
-                    scannedBuffer = '';
+                    html5QrCode.pause(); 
+                    sendToCheckIn(decodedText);
                 }
-            } else {
-                scannedBuffer += e.key;
-            }
-        });
+            ).catch(err => alert("相機啟動失敗，請確認是否允許相機權限"));
+        }
 
         function sendToCheckIn(qrId) {
             const resultBox = document.getElementById('result-box');
@@ -359,7 +358,7 @@
 
                 if(data.status === 'success') {
                     resultBox.className = 'success';
-                    resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.3rem; color: #2d3748;">貴賓：${data.guest_name}</span>`;
+                    resultBox.innerHTML = `✅ 報到完成！<br><span style="font-size: 1.2rem; color: #2d3748;">來賓：${data.guest_name}</span>`;
                     
                     checkInCount++;
                     document.getElementById('stats-counter').innerText = `目前報到人數：${checkInCount} 人`;
@@ -379,9 +378,10 @@
                     resultBox.innerText = `❌ ${data.message}`;
                 }
 
-                // 顯示結果 1.5 秒後自動隱藏，準備迎接下一位
                 setTimeout(() => {
                     resultBox.style.display = 'none';
+                    html5QrCode.resume();
+                    isProcessing = false;
                 }, 1500);
             })
             .catch(error => {
@@ -391,6 +391,8 @@
 
                 setTimeout(() => {
                     resultBox.style.display = 'none';
+                    html5QrCode.resume();
+                    isProcessing = false;
                 }, 2000);
             });
         }
