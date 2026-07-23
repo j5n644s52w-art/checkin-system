@@ -570,6 +570,54 @@
         // 每隔 3 秒鐘，自動去後台拉一次資料 (維持電腦與手機畫面同步)
         setInterval(syncData, 3000);
 
+        // ==========================================
+        // 💡 硬體掃描槍自動偵測（免按 Enter 智慧版）
+        // ==========================================
+        let scanBuffer = '';
+        let lastKeyTime = Date.now();
+
+        // 監聽整個網頁的鍵盤按鍵事件 (掃描槍視同鍵盤)
+        document.addEventListener('keypress', function (e) {
+    
+            // 1. 防干擾機制：如果目前游標在網頁其他的正常文字輸入框，就不要啟動掃描偵測
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) && document.activeElement.id !== 'barcode-input') {
+                 return;
+            }
+
+             const currentTime = Date.now();
+    
+            // 2. 判斷輸入速度：如果兩次按鍵間隔超過 100 毫秒，代表是「人類手動打字」，清空累積的字元
+            if (currentTime - lastKeyTime > 100) {
+                scanBuffer = ''; 
+            }
+            lastKeyTime = currentTime;
+
+            // 3. 處理輸入與自動送出
+            if (e.key === 'Enter') {
+                // 【情境 A】有些掃描槍結尾還是會強制帶一個 Enter，這時直接攔截並送出
+                 if (scanBuffer.trim().length > 0) {
+                     const qrId = scanBuffer.trim();
+                     sendToCheckIn(qrId); // 執行您的報到核對函數
+                    scanBuffer = '';     // 送出後清空，準備下一位
+                }
+            } else {
+                // 累積掃描槍高速打出來的字元
+                scanBuffer += e.key;
+        
+                 // 【情境 B：極致秒殺版】(如果您的 QR Code 長度固定，例如都是 4 碼如 A001)
+                // 只要把下方這段註解 (/* ... */) 拿掉，並把數字 4 改成您的長度
+                // 它就會在字數達標的「那一瞬間」直接送出，完全不等任何 Enter！
+                /* 
+                if (scanBuffer.length >= 4) {
+                 const qrId = scanBuffer.trim();
+                 sendToCheckIn(qrId);
+                 scanBuffer = '';
+                }
+                */
+             }
+            });
+      
+
     </script>
 </body>
 </html>
